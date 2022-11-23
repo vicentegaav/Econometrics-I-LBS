@@ -11,6 +11,8 @@
 library(tidyverse)
 library(readxl)
 library(car)
+library(stargazer)
+library(ivreg)
 
 # Change working directory and load data
 
@@ -35,6 +37,8 @@ mod_a <- lm(c ~ lag(c,1) + lag(c,2) + lag(c,3) + lag(c,4),
 
 summary(mod_a)
 
+stargazer(mod_a, type = "latex", out = "q6a.tex")
+
 linearHypothesis(mod_a, c("lag(c, 2) = 0", "lag(c, 3) = 0", "lag(c, 4) = 0"))
 
 # (b)
@@ -43,7 +47,6 @@ linearHypothesis(mod_a, c("lag(c, 2) = 0", "lag(c, 3) = 0", "lag(c, 4) = 0"))
 
 df <- df %>% 
   mutate(y = rdi/population)
-
 
 # Create " changes variables"
 
@@ -56,16 +59,17 @@ mod_b <- lm(delta_c~ delta_y,
 
 summary(mod_b)
 
-# log changes
+# (c) 
+
 
 df <- df %>% 
   mutate(log_dc = log(c/lag(c,1)),
-       log_dy = log(c/lag(y,1)))
+       log_dy = log(y/lag(y,1)))
 
-
-mod_c <- lm(log_dc~ log_dy,
-            data = df)
-
+mod_c <- ivreg(log_dc ~ log_dy |
+                1 + lag(log_dc,2) + lag(log_dc,3) + 
+                 lag(log_dc,4) + lag(log_dc,5),
+               data = df)
 summary(mod_c)
 
-
+stargazer(mod_c, type = "latex", out = "q6c.tex")
