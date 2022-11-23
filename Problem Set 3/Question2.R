@@ -10,6 +10,7 @@
 
 library(tidyverse)
 library(readxl)
+library(stargazer)
 
 # Change working directory and load data
 
@@ -44,6 +45,8 @@ spec_a <- paste0(spec_init, "+logQsq")
 
 mod_a <- lm(spec_a, data = df)
 summary(mod_a)
+
+stargazer(mod_a,type = 'latex',out = "mod_a.tex")
 
 # (b)
 
@@ -91,8 +94,17 @@ for(i in beta7_vec){
 save_OLS_c <- save_OLS_c %>% 
   filter(!is.na(ssr))
 
+
 min_beta7 <- save_OLS_c %>% 
   filter(ssr == min(save_OLS_c$ssr))
+
+save_OLS_c %>% 
+  ggplot(aes(x = beta7, y = ssr))+
+  geom_line(size = 1, color = "deepskyblue4")+
+  geom_vline(xintercept = min_beta7$beta7, size = 1, color = "grey")+
+  theme_bw()
+
+ggsave("min_beta7.jpg", width = 6, height = 4)
 
 # rerun regression just for that beta
 
@@ -103,6 +115,8 @@ model_c <- lm(logtc_pl ~ logQ + logpk_pl + logpf_pl + z,
                 data = df_c)
 
 summary(model_aux)
+
+stargazer(model_c, type = "latex", out = "mod_c.tex")
 
 # still need to recover beta3
 
